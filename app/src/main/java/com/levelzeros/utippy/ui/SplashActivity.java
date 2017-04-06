@@ -1,10 +1,11 @@
-package com.levelzeros.utippy;
+package com.levelzeros.utippy.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.levelzeros.utippy.MainActivity;
 import com.levelzeros.utippy.utility.PreferenceUtils;
 
 /**
@@ -23,7 +24,7 @@ public class SplashActivity extends AppCompatActivity {
          * Check user's initialization status and open appropriate activity for each scenario
          */
         if(!PreferenceUtils.checkInitializatonStatus(this)) {
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(this, WelcomeActivity.class);
             startActivity(intent);
             finish();
         } else {

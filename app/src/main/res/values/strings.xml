@@ -11,25 +11,32 @@
 
 
     <!-- Strings related to login -->
-    <string name="prompt_student_id">Elearning Username</string>
+    <string name="prompt_elearning_username">E-learning ID</string>
+    <string name="prompt_ulearn_username">ULearn username</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in</string>
     <string name="action_prompt_log_in">Let\'s Go!</string>
+    <string name="action_select_elearning">E-learning</string>
+    <string name="action_select_ulearn">ULearn</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_initalization">Initialization failed, please login again</string>
+    <string name="error_initialization">Initialization failed, please login again</string>
     <string name="error_field_required">This field is required</string>
+    <string name="error_identify_domain">Error identifying domain</string>
     <string name="message_welcome">E-learning made simple</string>
     <string name="message_logout">Are you sure to log out?</string>
     <string name="message_login_guide">Login using your elearning credential</string>
+    <string name="option_elearning">elearning</string>
+    <string name="option_ulearn">ulearn</string>
 
     <!-- - - - - - - - - - - -->
     <!--Used by Preferences  -->
     <!-- - - - - - - - - - - -->
     <string name="hasLoggedIn">has_logged_in</string>
     <string name="userWebToken">user_web_token</string>
+    <string name="user_elearning_domain">user_elearning_domain</string>
 
     <!-- - - - - - - - - - - -->
     <!--  Used by Settings   -->

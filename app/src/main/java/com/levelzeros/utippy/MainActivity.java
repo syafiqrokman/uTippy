@@ -18,6 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.levelzeros.utippy.ui.LoginActivity;
+
 public class MainActivity extends AppCompatActivity
         implements StorageFragment.OnStorageItemClickListener {
 

@@ -1,14 +1,10 @@
-package com.levelzeros.utippy;
+package com.levelzeros.utippy.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,12 +13,13 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.levelzeros.utippy.MainActivity;
+import com.levelzeros.utippy.R;
 import com.levelzeros.utippy.utility.NetworkUtils;
 import com.levelzeros.utippy.utility.PreferenceUtils;
 
@@ -31,7 +28,7 @@ import java.net.URL;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements UserDetailTask.UserDetailCallBack {
+public class LoginActivity extends AppCompatActivity {
 
     private Context mContext = this;
     /**
@@ -40,15 +37,15 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
     private UserLoginTask mAuthTask = null;
     private UserDetailTask mUserDetailTask = null;
 
-    // UI references.
-    private LinearLayout mLoginWelcomeContainer;
-    private LinearLayout mLoginFormContainer;
-    private Button mGetStartedButton;
+    // UI references
     private EditText mStudentIdEditText;
     private EditText mPasswordEditText;
     private TextView mCancelOption;
     private View mProgressView;
     private View mLoginFormView;
+
+    //Variables
+    private String mDomain;
 
 
     @Override
@@ -58,29 +55,21 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
 
         getSupportActionBar().setElevation(0f);
 
-        mLoginWelcomeContainer = (LinearLayout) findViewById(R.id.login_welcome_screen);
-        mLoginFormContainer = (LinearLayout) findViewById(R.id.login_form_screen);
-        mGetStartedButton = (Button) findViewById(R.id.get_started_button);
+        mDomain = getIntent().getStringExtra(WelcomeActivity.ELEARNING_DOMAIN);
+        if (TextUtils.isEmpty(mDomain)) {
+            Toast.makeText(mContext, getString(R.string.error_identify_domain), Toast.LENGTH_LONG).show();
+            finish();
+        }
+
         mCancelOption = (TextView) findViewById(R.id.login_cancel);
-
-        //Set up the welcome screen
-        mLoginWelcomeContainer.setVisibility(View.VISIBLE);
-        mLoginFormContainer.setVisibility(View.GONE);
-        mGetStartedButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showLoginForm();
-            }
-        });
-
         mCancelOption.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                hideLoginForm();
+                finish();
             }
         });
 
-
+        //TODO: Programmatically set EditText hint based on domain
         // Set up the login form.
         mStudentIdEditText = (EditText) findViewById(R.id.student_id);
 
@@ -96,7 +85,7 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        Button mEmailSignInButton = (Button) findViewById(R.id.sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -106,28 +95,6 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-
-    }
-
-    /**
-     * Hide welcome screen and show login form
-     */
-    private void showLoginForm(){
-        mLoginWelcomeContainer.setVisibility(View.GONE);
-        mLoginFormContainer.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * Hide login form and some welcome screen
-     */
-    private void hideLoginForm(){
-        mLoginWelcomeContainer.setVisibility(View.VISIBLE);
-        mLoginFormContainer.setVisibility(View.GONE);
-
-        //Boilerplate code to hide soft keyboard
-        View view = this.getCurrentFocus();
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
 
@@ -181,7 +148,7 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
             final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
             if (activeNetwork == null || !activeNetwork.isConnected()) {
                 Snackbar.make(mLoginFormView, getString(R.string.network_error), 10000)
-                        .setAction(getString(R.string.prompt_retry),new OnClickListener() {
+                        .setAction(getString(R.string.prompt_retry), new OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 attemptLogin();
@@ -191,27 +158,27 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
             } else {
                 showProgress(true);
                 mCancelOption.setVisibility(View.GONE);
-                mAuthTask = new UserLoginTask(this, this);
+                mAuthTask = new UserLoginTask();
                 mAuthTask.execute(studentId, password);
             }
         }
     }
 
     /**
-     * Check student ID input validity
+     * Check student's username input validity
      *
-     * @param studentId
-     * @return
+     * @param username Username input for E-learning or ULearn credential
+     * @return Check if the length of input is more than 3 characters
      */
-    private boolean isStudentIdValid(String studentId) {
-        return studentId.length() >= 3;
+    private boolean isStudentIdValid(String username) {
+        return username.length() > 3;
     }
 
     /**
      * Check password input validity
      *
-     * @param password
-     * @return
+     * @param password Password input for E-learning or ULearn credential
+     * @return Check if the length of password is not empty
      */
     private boolean isPasswordValid(String password) {
         return password.length() >= 0;
@@ -220,37 +187,9 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
     /**
      * Shows the progress UI and hides the login form.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
     }
 
 
@@ -258,17 +197,15 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
      * Update user's details upon success login, then proceed to MainActivity
      * else prompt to retry login
      *
-     * @param context
-     * @param initalizationStatus
+     * @param initializationStatus Initialization status for login status
      */
-    @Override
-    public void onUserDetailsObtained(Context context, boolean initalizationStatus) {
+    void onUserDetailsObtained(boolean initializationStatus) {
         showProgress(false);
-        if (initalizationStatus) {
-            PreferenceUtils.updateInitializationStatus(context, initalizationStatus);
+        if (initializationStatus) {
+            PreferenceUtils.updateInitializationStatus(mContext, initializationStatus);
 
-            Intent intent = new Intent(context, MainActivity.class);
-            context.startActivity(intent);
+            Intent intent = new Intent(mContext, MainActivity.class);
+            mContext.startActivity(intent);
 
             finish();
         } else {
@@ -276,7 +213,7 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
             mUserDetailTask = null;
             mCancelOption.setVisibility(View.VISIBLE);
 
-            mPasswordEditText.setError(getString(R.string.error_initalization));
+            mPasswordEditText.setError(getString(R.string.error_initialization));
             mPasswordEditText.requestFocus();
         }
     }
@@ -285,16 +222,8 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<String, Void, String> {
+    private class UserLoginTask extends AsyncTask<String, Void, String> {
         private static final String TAG = "UserLoginTask";
-
-        private final Context mContext;
-        private final UserDetailTask.UserDetailCallBack mCallBack;
-
-        UserLoginTask(Context context, UserDetailTask.UserDetailCallBack callBack) {
-            mContext = context;
-            mCallBack = callBack;
-        }
 
         @Override
         protected String doInBackground(String... params) {
@@ -307,11 +236,12 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
 
             URL webTokenRequestUrl = NetworkUtils.buildWebTokenQueryUrl(mStudentID, mPassword);
 
+            //TODO:Edit network response based on domain API
             try {
                 String jsonWebTokenResponse = NetworkUtils.getResponseFromHttpsUrl(webTokenRequestUrl, mContext);
 
-                String webToken = NetworkUtils.getWebToken(jsonWebTokenResponse);
-                return webToken;
+                return NetworkUtils.getWebToken(jsonWebTokenResponse);
+
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -322,12 +252,12 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
         protected void onPostExecute(String webToken) {
             mAuthTask = null;
 
-
+            //Obtain user's detail upon successful login
             if (null != webToken && !webToken.isEmpty()) {
 
                 PreferenceUtils.updateWebToken(mContext, webToken);
 
-                mUserDetailTask = new UserDetailTask(mContext, mCallBack);
+                mUserDetailTask = new UserDetailTask();
                 mUserDetailTask.execute();
 
             } else {
@@ -345,43 +275,33 @@ public class LoginActivity extends AppCompatActivity implements UserDetailTask.U
             showProgress(false);
         }
     }
-}
 
 
-/**
- * Asynchronous task to obtain user's details
- */
-class UserDetailTask extends AsyncTask<Void, Void, Boolean> {
-    private static final String TAG = "UserDetailTask";
+    /**
+     * Asynchronous task to obtain user's details
+     */
+    private class UserDetailTask extends AsyncTask<Void, Void, Boolean> {
+        private static final String TAG = "UserDetailTask";
 
-    public interface UserDetailCallBack {
-        void onUserDetailsObtained(Context context, boolean initalizationStatus);
-    }
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            URL userDetailRequestUrl = NetworkUtils.buildUserDetailQueryUrl(mContext);
 
-    private Context mContext;
-    private UserDetailCallBack mCallback;
+            try {
+                String jsonWebTokenResponse = NetworkUtils.getResponseFromHttpsUrl(userDetailRequestUrl, mContext);
 
-    public UserDetailTask(Context context, UserDetailCallBack callBack) {
-        mContext = context;
-        mCallback = callBack;
-    }
+                return NetworkUtils.getUserDetail(jsonWebTokenResponse, mContext);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
 
-    @Override
-    protected Boolean doInBackground(Void... params) {
-        URL userDetailRequestUrl = NetworkUtils.buildUserDetailQueryUrl(mContext);
-
-        try {
-            String jsonWebTokenResponse = NetworkUtils.getResponseFromHttpsUrl(userDetailRequestUrl, mContext);
-
-            return NetworkUtils.getUserDetail(jsonWebTokenResponse, mContext);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        @Override
+        protected void onPostExecute(Boolean initializationStatus) {
+            onUserDetailsObtained(initializationStatus);
         }
     }
-
-    @Override
-    protected void onPostExecute(Boolean initalizationStatus) {
-        mCallback.onUserDetailsObtained(mContext, initalizationStatus);
-    }
 }
+
+
