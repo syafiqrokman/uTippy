@@ -14,6 +14,7 @@ public class AboutActivity extends AppCompatActivity {
     public static final String FACEBOOK_PAGE_LINK = "https://www.facebook.com/lvlzeros/";
     public static final String JOIN_US_FORM_LINK = "https://docs.google.com/forms/d/e/1FAIpQLSeU9GbM6oCJ25zCmKSRBl57PXrfAopHL81ovabyoTuSeBSduQ/viewform?usp=sf_link";
     public static final String FEEDBACK_FORM_LINK = "https://docs.google.com/forms/d/e/1FAIpQLScH5tsyZdluplclyEMr04Oy0mYKAYWtUZG2CbskOLI2DccTpQ/viewform?usp=sf_link";
+    public static final String GITHUB_PAGE_LINK = "https://github.com/lvlzeros/uTippy";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +46,14 @@ public class AboutActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openUrl(FEEDBACK_FORM_LINK);
+            }
+        });
+
+        Button mGithubButton = (Button) findViewById(R.id.button_github);
+        mGithubButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openUrl(GITHUB_PAGE_LINK);
             }
         });
     }
